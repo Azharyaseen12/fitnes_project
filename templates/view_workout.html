@@ -1,0 +1,41 @@
+<!-- view_workout.html -->
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Workout</title>
+</head>
+<body>
+    <h1>My Workout Plan</h1>
+    <ul>
+        {% for item in workout %}
+            <li>week : {{item.week_number}}- day: {{ item.day_number }} - {{ item.exercise }} <a href="{% url 'remove_exercise' item.id %}">Remove</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'add_exercise' %}">Add Exercise</a>
+    
+</body>
+</html> {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Plan</title>
+</head>
+<body>
+    <h1>Workout Plan</h1>
+    {% for day in workout_plan %}
+        <h2>Week {{ day.week_number }}, Day {{ day.day_number }}</h2>
+        <ul>
+            {% for workout in day.workouts %}
+                <li><a href="/detail_exercise/{{ workout.exercise }}/">{{ workout.exercise }}</a> <a href="{% url 'remove_exercise' workout.id %}">Remove</a></li>  
+            {% endfor %}
+        </ul>
+
+    {% endfor %}
+    <a href="{% url 'add_exercise' %}">Add excercise</a>
+</body>
+</html>
+
