@@ -13,8 +13,11 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+from django.contrib.auth import logout
 from datetime import date,timedelta
 # registration
+def home(request):
+    return render(request, 'base.html')
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -39,7 +42,7 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('view_workout')
+                return redirect('generate_user_workout')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -49,16 +52,15 @@ def user_login(request):
     return render(request, 'login.html', {'form': form})
 
 
-
 # Workout
-@login_required
+@login_required(login_url='login')
 def generate_user_workout(request):
     user = request.user
     activity_level = user.activity_level
     goal_activity_level = user.goal_activity_level
     workout_plan = generate_workout_plan(activity_level, goal_activity_level)
     store_workout_plan(user, workout_plan)
-    return HttpResponse('Workout plan generated and stored successfully.')
+    return redirect('view_workout')
 
 
 def generate_workout_plan(activity_level, goal_activity_level):
@@ -147,7 +149,7 @@ file_path = os.path.join('F:\\', 'falconxoft internship', 'project4', 'csv_files
 
 
 # now display the workouts
-@login_required
+@login_required(login_url='login')
 def view_workout(request):
     # Retrieve workouts for the user
     workouts = Workout.objects.filter(user=request.user).order_by('week_number', 'day_number')
@@ -173,7 +175,7 @@ def view_workout(request):
 #     workout = Workout.objects.filter(user=user)
 #     return render(request, 'view_workout.html', {'workout': workout})
 
-@login_required
+@login_required(login_url='login')
 def add_exercise(request):
     if request.method == 'POST':
         exercise_id = request.POST.get('exercise_id')
@@ -187,12 +189,12 @@ def add_exercise(request):
         exercises = Exercise.objects.all()
         return render(request, 'add_excercise.html', {'exercises': exercises})
 
-@login_required
+@login_required(login_url='login')
 def remove_exercise(request, workout_id):
     workout = Workout.objects.get(pk=workout_id)
     workout.delete()
     return redirect('view_workout')
-@login_required
+@login_required(login_url='login')
 def detail_exercise(request, exercise):
     details = Exercise.objects.filter(name=exercise).first()
     # print(details.exercise_type)
@@ -255,7 +257,7 @@ file_path = os.path.join('F:\\', 'falconxoft internship', 'project4', 'csv_files
 
 def add_weight_entry(user, weight, date):
     WeightEntry.objects.create(user=user, weight=weight, date=date)
-
+@login_required(login_url='login')
 def add_weight(request):
     if request.method == 'POST':
         form = WeightEntryForm(request.POST)
@@ -268,7 +270,7 @@ def add_weight(request):
         form = WeightEntryForm()
     return render(request, 'add_weight.html', {'form': form})
 
-
+@login_required(login_url='login')
 def weight_tracker(request):
     weight_entries = WeightEntry.objects.filter(user=request.user).order_by('date')
     dates = [entry.date for entry in weight_entries]
@@ -301,7 +303,7 @@ def weight_tracker(request):
 
 
 
-
+@login_required(login_url='login')
 def calculate_daily_calorie_goal(sex, age, activity_level):
     try:
         calorie_requirement = CalorieRequirement.objects.filter(
@@ -331,7 +333,7 @@ def calculate_age(birth_date):
     age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
     return age
 
-@login_required
+@login_required(login_url='login')
 def generate_diet_plan(request):
     # Assuming you have access to the user's sex, age, and activity level
     user = request.user
@@ -367,7 +369,7 @@ def generate_diet_plan(request):
         return render(request, 'diet_plan.html', {'diet_plans': diet_plans ,'daily_calorie_goal': daily_calorie_goal})
 
 
-
+@login_required(login_url='login')
 def add_food_to_diet_plan(request):
     if request.method == 'POST':
         recipe_id = request.POST.get('recipe_id')
@@ -382,10 +384,16 @@ def add_food_to_diet_plan(request):
     else:
         recipe = Recipe.objects.all()
     return render(request, 'add_food_to_diet_plan.html', {'recipe':recipe})
-
+@login_required(login_url='login')
 def remove_food(request,id):
     if request.method == 'GET':
         recipe = Recipe.objects.filter(pk=id).first()
         diet_plan, _ = DietPlan.objects.get_or_create(user=request.user)
         diet_plan.recipes.remove(recipe)
         return HttpResponse('recipe deleted')
+
+@login_required(login_url='login')
+def logout_view(request):
+    logout(request)
+    # Redirect to a specific URL after logout, or to the homepage
+    return redirect('login') 

@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <title>{{page_title}}</title>
     {% include 'includes/head.html' %}
     {% block css %}
@@ -12,11 +13,10 @@
 </head>
 
 <body class="crm_body_bg">
-    {% include 'includes/sidebar.html' %}
-    {% block threadbar %}
-    {% endblock %}
+    {% include 'includes/nav.html' %}
+    
     <section class="main_content dashboard_part large_header_bg">
-        <div class="main_content_iner ">
+        <div class="main_content_iner">
             <div class="container-fluid p-0">
                 {% block content %}
                 {% endblock %}
@@ -24,8 +24,10 @@
         </div>
     </section>
     {% include 'includes/js.html' %}
+    
     {% block js %}
     {% endblock %}
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>

@@ -1,23 +1,30 @@
-<!-- view_workout.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Workout Plan</h1>
+    {% for day in workout_plan %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2 class="card-title">Week {{ day.week_number }}, Day {{ day.day_number }}</h2>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for workout in day.workouts %}
+                        <li class="list-group-item">
+                            <a href="/detail_exercise/{{ workout.exercise }}/">{{ workout.exercise }}</a> 
+                            <a href="{% url 'remove_exercise' workout.id %}" class="btn btn-danger btn-sm float-right">Remove</a>
+                        </li>  
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+    <a href="{% url 'add_exercise' %}" class="btn btn-primary">Add Exercise</a>
+</div>
+{% endblock content %}
 
 {% comment %} <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>View Workout</title>
-</head>
-<body>
-    <h1>My Workout Plan</h1>
-    <ul>
-        {% for item in workout %}
-            <li>week : {{item.week_number}}- day: {{ item.day_number }} - {{ item.exercise }} <a href="{% url 'remove_exercise' item.id %}">Remove</a></li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'add_exercise' %}">Add Exercise</a>
-    
-</body>
-</html> {% endcomment %}
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -39,3 +46,4 @@
 </body>
 </html>
 
+ {% endcomment %}

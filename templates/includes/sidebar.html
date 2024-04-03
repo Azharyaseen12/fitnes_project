@@ -1,0 +1,31 @@
+{% load static %}
+<nav class="sidebar vertical-scroll  ps-container ps-theme-default ps-active-y">
+    <div class="logo d-flex justify-content-between">
+        <a href=""><h3>Employ Search</h3></a>
+        <div class="sidebar_close_icon d-lg-none">
+            <i class="ti-close"></i>
+        </div>
+    </div>
+    {% if request.user.is_superuser %}
+    <ul id="sidebar_menu">
+        <li class="">
+            <a href="{% url 'dashboard' %}" aria-expanded="false">
+                <div class="icon_menu">
+                    <img src="img/menu-icon/5.svg" alt="">
+                </div>
+                <span>Home</span>
+            </a>
+        </li>
+
+        <li class="">
+            <a href="{% url 'user_logout' %}" aria-expanded="false">
+                <div class="icon_menu">
+                    <img src="img/menu-icon/5.svg" alt="">
+                </div>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+    {% endif %}
+
+</nav>

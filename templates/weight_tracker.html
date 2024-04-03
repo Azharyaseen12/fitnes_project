@@ -1,16 +1,11 @@
-<!-- weight_tracker.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weight Tracker</title>
-</head>
-<body>
-    <h1>Weight Tracker</h1>
-    <div>
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="mt-5 mb-4">Weight Tracker</h1>
+    <div class="text-center">
         <!-- Display the graph -->
-        <img src="data:image/png;base64,{{ graph }}" alt="Weight Tracker Graph">
+        <img src="data:image/png;base64,{{ graph }}" alt="Weight Tracker Graph" class="img-fluid">
     </div>
-</body>
-</html>
+</div>
+{% endblock content %}
+

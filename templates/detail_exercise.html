@@ -1,24 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <ul>
-        <li><p>Name :{{ exercise.name }}</p></li>
-        <li><p>exercise_type: {{ exercise.exercise_type }}</p></li>
-        <li><p>movement_type: {{ exercise.movement_type }}</p></li>
-        <li><p>muscle_group: {{ exercise.muscle_group }}</p></li>
-        <li><p>major_muscle: {{ exercise.major_muscle }}</p></li>
-        <li><p>minor_muscle: {{ exercise.minor_muscle }}</p></li>
-        <li><p>notes: {{ exercise.notes }}</p></li>
-        <li><p>modifications: {{ exercise.modifications }}</p></li>
-        <li><p>beginner: {{ exercise.beginner }}</p></li>
-        <li><p>intermediate: {{ exercise.intermediate }}</p></li>
-        <li><p>advanced: {{ exercise.advanced }}</p></li>
-        <li><p>warmup: {{ exercise.warmup }}</p></li>
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Exercise Details</h1>
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Name:</strong> {{ exercise.name }}</li>
+        <li class="list-group-item"><strong>Exercise Type:</strong> {{ exercise.exercise_type }}</li>
+        <li class="list-group-item"><strong>Movement Type:</strong> {{ exercise.movement_type }}</li>
+        <li class="list-group-item"><strong>Muscle Group:</strong> {{ exercise.muscle_group }}</li>
+        <li class="list-group-item"><strong>Major Muscle:</strong> {{ exercise.major_muscle }}</li>
+        <li class="list-group-item"><strong>Minor Muscle:</strong> {{ exercise.minor_muscle }}</li>
+        <li class="list-group-item"><strong>Notes:</strong> {{ exercise.notes }}</li>
+        <li class="list-group-item"><strong>Modifications:</strong> {{ exercise.modifications }}</li>
+        <li class="list-group-item"><strong>Beginner:</strong> {{ exercise.beginner }}</li>
+        <li class="list-group-item"><strong>Intermediate:</strong> {{ exercise.intermediate }}</li>
+        <li class="list-group-item"><strong>Advanced:</strong> {{ exercise.advanced }}</li>
+        <li class="list-group-item"><strong>Warmup:</strong> {{ exercise.warmup }}</li>
     </ul>
-</body>
-</html>
+</div>
+{% endblock content %}
+

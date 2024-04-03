@@ -1,26 +1,26 @@
-<!-- add_exercise.html -->
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Exercise</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
     <h1>Add Exercise</h1>
-    <form action="{% url 'add_exercise' %}" method="post">
+    <form action="{% url 'add_exercise' %}" method="post" class="mb-4">
         {% csrf_token %}
-        <select name="exercise_id">
-            {% for exercise in exercises %}
-            <option value="{{ exercise.id }}">{{ exercise.name }}</option>
-            {% endfor %}
-                        
-        </select>
+        <div class="form-group">
+            <label for="exercise_id">Exercise:</label>
+            <select name="exercise_id" id="exercise_id" class="form-control">
+                {% for exercise in exercises %}
+                <option value="{{ exercise.id }}">{{ exercise.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
             <label for="week_number">Week Number:</label>
-            <input type="number" name="week_number" id="week_number" value="1">
-            <label for="day">day</label>
-            <input type="number" name="day" id="day" value="1">
-        <button type="submit">Add</button>
+            <input type="number" name="week_number" id="week_number" class="form-control" value="1">
+        </div>
+        <div class="form-group">
+            <label for="day">Day:</label>
+            <input type="number" name="day" id="day" class="form-control" value="1">
+        </div>
+        <button type="submit" class="btn btn-primary">Add</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock content %}

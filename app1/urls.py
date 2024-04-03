@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import add_food_to_diet_plan,remove_food,detail_exercise,add_weight,generate_diet_plan,weight_tracker, register,user_login,generate_user_workout,view_workout,add_exercise,remove_exercise
+from .views import logout_view,home, add_food_to_diet_plan,remove_food,detail_exercise,add_weight,generate_diet_plan,weight_tracker, register,user_login,generate_user_workout,view_workout,add_exercise,remove_exercise
 
 urlpatterns = [
+    # path('',home , name = 'home' ),
+    path('logout/', logout_view, name='logout'),
     path('',register , name = 'register' ),
     path('login/', user_login, name='login'),
     path('generate_user_workout/', generate_user_workout, name='generate_user_workout'),
