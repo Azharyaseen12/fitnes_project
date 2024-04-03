@@ -71,14 +71,44 @@ class Exercise(models.Model):
     def __str__(self):
         return self.name
 
-class DailyCalorieRequirement(models.Model):
-    sex = models.CharField(max_length=10)
-    age = models.IntegerField()
-    activity_level = models.CharField(max_length=10)
-    calorie_goal = models.IntegerField()
+class CalorieRequirement(models.Model):
+    age_low = models.IntegerField(null=True)
+    age_high = models.IntegerField(null=True)
+    male_low_activity = models.IntegerField(null=True)
+    male_moderate_activity = models.IntegerField(null=True)
+    male_high_activity = models.IntegerField(null=True)
+    female_low_activity = models.IntegerField(null=True)
+    female_moderate_activity = models.IntegerField(null=True)
+    female_high_activity = models.IntegerField(null=True)
+
+
+# class DailyCalorieRequirement(models.Model):
+#     sex = models.CharField(max_length=10)
+#     age = models.IntegerField()
+#     activity_level = models.CharField(max_length=10)
+#     calorie_goal = models.IntegerField()
 
 class Recipe(models.Model):
     title = models.CharField(max_length=100)
-    calories = models.IntegerField()
+    calories = models.FloatField(null=True)
     protein = models.FloatField()
     fat = models.FloatField()
+
+    def __str__(self):
+        return self.title
+    
+class DietPlan(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    date = models.DateField()
+    recipes = models.ManyToManyField(Recipe)
+
+    def __str__(self):
+        return f"Diet Plan for {self.user.username} on {self.date}"
+
+class WeightEntry(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    weight = models.DecimalField(max_digits=5, decimal_places=2)  # Assuming weight is stored in kilograms
+    date = models.DateField()
+
+    def __str__(self):
+        return f"{self.user.username}'s Weight Entry on {self.date}"

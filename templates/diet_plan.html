@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diet Plan</title>
+</head>
+<body>
+    <h1>Total number of calories</h1>
+    <p>Daily Calorie Goal: {{ daily_calorie_goal }}</p>
+    <h1>Diet Plan</h1>
+    {% for diet_plan in diet_plans %}
+    <h2>{{ diet_plan }}</h2>
+    <p>Date: {{ diet_plan.date }}</p>
+    <h3>Recipes for the Day:</h3>
+    <ol>
+        {% for recipe in diet_plan.recipes.all %}
+            <li>{{ recipe.title }} - Calories: {{ recipe.calories }} | Protein: {{ recipe.protein }} | Fat: {{ recipe.fat }}</li>
+            <a href="{% url 'remove_food' recipe.id %}">remove</a>
+        
+            {% endfor %}
+        <br><br><br><a href="{% url 'add_food_to_diet_plan' %}">add food</a>
+        </ol>
+    {% empty %}
+    <p>No diet plans available.</p>
+    {% endfor %}
+</body>
+</html>

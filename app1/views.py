@@ -6,11 +6,14 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import RegistrationForm
-from .models import CustomUser, Exercise, Workout,Recipe
+from .forms import RegistrationForm,WeightEntryForm,AddFoodForm
+from .models import CustomUser, Exercise, Workout,Recipe,CalorieRequirement,DietPlan,WeightEntry
 import datetime
 from collections import defaultdict
-
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
+from datetime import date,timedelta
 # registration
 def register(request):
     if request.method == 'POST':
@@ -118,9 +121,6 @@ def store_workout_plan(user, workout_plan):
         Workout.objects.create(user=user, **workout)
 
 
-
-
-
 def import_exercises_from_csv(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
@@ -198,27 +198,194 @@ def detail_exercise(request, exercise):
     # print(details.exercise_type)
     return render(request, 'detail_exercise.html', {'exercise': details})
 
+def import_recipe_from_csv(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            title = row.get('title')
+            calories = row.get('calories', None)
+            protein = row.get('protein', None)
+            fat = row.get('fat', None)
 
-# def import_recipe_from_csv(file_path):
-#     with open(file_path, 'r', encoding='utf-8') as file:
-#         reader = csv.DictReader(file)
-#         for row in reader:
-#             title = row['title']
-#             rating = row.get('rating', None)
-#             calories = row.get('calories', None)
-#             protein = row.get('protein', None)
-#             fat = row.get('fat', None)
+            if calories == '':
+                calories = 0.0
+            else:
+                calories = float(calories)
+            if protein == '':
+                protein = 0.0
+            else:
+                protein = float(protein)
+            if fat == '':
+                fat = 0.0
+            else:
+                fat = float(fat)
+            # Create Recipe instance
+            recipe = Recipe.objects.create(
+                title=title,
+                calories=calories,
+                protein=protein,
+                fat=fat
+            )
+            recipe.save()
 
-#             # Create Recipe instance
-#             recipe = Recipe.objects.create(
-#                 title=title,
-#                 rating=rating,
-#                 calories=calories,
-#                 protein=protein,
-#                 fat=fat
-#             )
-#             recipe.save()
-
-# # Usage example
-# file_path = os.path.join('F:\\', 'falconxoft internship', 'project4', 'csv_files', 'recipes.csv')
+# Usage example
+file_path = os.path.join('F:\\', 'falconxoft internship', 'project4', 'csv_files', 'recepies.csv')  # Corrected file name
 # import_recipe_from_csv(file_path)
+def import_calorie_requirements_from_csv(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            calorie_req = CalorieRequirement.objects.create(
+                age_low=row.get('age_low'),  # Change column names accordingly
+                age_high=row.get('age_high'),
+                male_low_activity=row.get('male_low_activity'),
+                male_moderate_activity=row.get('male_moderate_activity'),
+                male_high_activity=row.get('male_high_activity'),
+                female_low_activity=row.get('female_low_activity'),
+                female_moderate_activity=row.get('female_moderate_activity'),
+                female_high_activity=row.get('female_high_activity')
+            )
+            calorie_req.save()
+
+file_path = os.path.join('F:\\', 'falconxoft internship', 'project4', 'csv_files', 'calories.csv')  # Corrected file name
+# import_calorie_requirements_from_csv(file_path)
+
+
+# weight tracker work start
+
+def add_weight_entry(user, weight, date):
+    WeightEntry.objects.create(user=user, weight=weight, date=date)
+
+def add_weight(request):
+    if request.method == 'POST':
+        form = WeightEntryForm(request.POST)
+        if form.is_valid():
+            weight_entry = form.save(commit=False)
+            weight_entry.user = request.user 
+            weight_entry.save()
+            return redirect('weight_tracker')
+    else:
+        form = WeightEntryForm()
+    return render(request, 'add_weight.html', {'form': form})
+
+
+def weight_tracker(request):
+    weight_entries = WeightEntry.objects.filter(user=request.user).order_by('date')
+    dates = [entry.date for entry in weight_entries]
+    weights = [entry.weight for entry in weight_entries]
+
+    # Generate the graph
+    plt.figure(figsize=(10, 6))
+    plt.plot(dates, weights, marker='o', linestyle='-', color='b')
+    plt.title('Weight Tracker')
+    plt.xlabel('Date')
+    plt.ylabel('Weight (kg)')
+    plt.xticks(rotation=45)
+    
+    # Convert plot to bytes and embed in HTML
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    graph = base64.b64encode(image_png)
+    graph = graph.decode('utf-8')
+    buffer.close()
+
+    return render(request, 'weight_tracker.html', {'graph': graph})
+
+# def get_weight_data(user):
+#     weight_entries = WeightEntry.objects.filter(user=user).order_by('date')
+#     dates = [entry.date for entry in weight_entries]
+#     weights = [entry.weight for entry in weight_entries]
+#     return dates, weights
+
+
+
+
+def calculate_daily_calorie_goal(sex, age, activity_level):
+    try:
+        calorie_requirement = CalorieRequirement.objects.filter(
+            age_low__lte=age,
+            age_high__gte=age
+        ).first()
+
+        if sex == 'male':
+            if activity_level == 'low':
+                return calorie_requirement.male_low_activity
+            elif activity_level == 'moderate':
+                return calorie_requirement.male_moderate_activity
+            elif activity_level == 'high':
+                return calorie_requirement.male_high_activity
+        elif sex == 'female':
+            if activity_level == 'low':
+                return calorie_requirement.female_low_activity
+            elif activity_level == 'moderate':
+                return calorie_requirement.female_moderate_activity
+            elif activity_level == 'high':
+                return calorie_requirement.female_high_activity
+    except CalorieRequirement.DoesNotExist:
+        return None
+
+def calculate_age(birth_date):
+    today = date.today()
+    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    return age
+
+@login_required
+def generate_diet_plan(request):
+    # Assuming you have access to the user's sex, age, and activity level
+    user = request.user
+    # print(user.sex_at_birth)
+    sex = user.sex_at_birth
+    age = calculate_age(user.birth_date)
+    activity_level = user.activity_level
+
+    daily_calorie_goal = calculate_daily_calorie_goal(sex, age, activity_level)
+    daily_calorie_range = daily_calorie_goal  
+
+    existing_diet_plans = DietPlan.objects.filter(user=user)
+    if existing_diet_plans.exists():
+        # If a diet plan already exists for the user, return the existing plan
+        # return render(request, 'diet_plan.html', {'diet_plans': existing_diet_plans})
+        return render(request, 'diet_plan.html', {'diet_plans': existing_diet_plans ,'daily_calorie_goal': daily_calorie_goal})
+    else:
+        diet_plan = {}
+        start_date = datetime.datetime.now().date()
+        for day in range(28):
+            target_calories = daily_calorie_goal - (daily_calorie_range / 2) + (daily_calorie_range * random.random())
+            recipes = Recipe.objects.filter(calories__gte=target_calories - (daily_calorie_range / 2),
+                                            calories__lte=target_calories + (daily_calorie_range / 2))
+            selected_recipe = random.choice(recipes)
+            diet_plan[start_date + timedelta(days=day)] = selected_recipe
+    
+        diet_plan_instance = DietPlan(user=user,date=start_date)
+        diet_plan_instance.save()
+        for date, recipe in diet_plan.items():
+            diet_plan_instance.recipes.add(recipe, through_defaults={'date': date})
+
+        diet_plans = DietPlan.objects.filter(user=user)
+        return render(request, 'diet_plan.html', {'diet_plans': diet_plans ,'daily_calorie_goal': daily_calorie_goal})
+
+
+
+def add_food_to_diet_plan(request):
+    if request.method == 'POST':
+        recipe_id = request.POST.get('recipe_id')
+        try:
+                recipe = Recipe.objects.get(pk=recipe_id)
+                diet_plan, _ = DietPlan.objects.get_or_create(user=request.user)
+                diet_plan.recipes.add(recipe)
+                return HttpResponse('success_page')  # Redirect to success page or any other page
+        except Recipe.DoesNotExist:
+                # Handle case where recipe with given ID does not exist
+                return render(request, 'error.html', {'message': 'Recipe not found'})
+    else:
+        recipe = Recipe.objects.all()
+    return render(request, 'add_food_to_diet_plan.html', {'recipe':recipe})
+
+def remove_food(request,id):
+    if request.method == 'GET':
+        recipe = Recipe.objects.filter(pk=id).first()
+        diet_plan, _ = DietPlan.objects.get_or_create(user=request.user)
+        diet_plan.recipes.remove(recipe)
+        return HttpResponse('recipe deleted')
