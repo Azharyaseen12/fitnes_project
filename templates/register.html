@@ -2,66 +2,61 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container my-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8"> <!-- Increase column width to cover almost the complete page -->
-            <h2>User Registration</h2>
-            <form method="post">
-                {% csrf_token %}
-                <!-- Username field -->
-                <div class="form-group">
-                    <label for="id_username">Username:</label>
-                    {{ form.username }}
+        <div class="col-lg-8">
+            <div class="card border-light shadow-lg"> <!-- Added border-dark and shadow-lg classes -->
+                <div class="card-body">
+                    <h2 class="card-title">User Registration</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if form.errors %}
+                            <div class="alert alert-danger" role="alert">
+                                {% for field, error_list in form.errors.items %}
+                                    {% for error in error_list %}
+                                        {{ field }}: {{ error }}
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-group">
+                            {{ form.username }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password1 }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password2 }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.weight }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.height }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.birth_date }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.activity_level }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.sex_at_birth }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.goal_weight }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.goal_activity_level }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.workout_intensity }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                    <p class="mt-3">Already have an account? <a href="{% url 'login' %}">Login</a></p>
                 </div>
-
-                <!-- Password fields -->
-                <div class="form-group">
-                    <label for="id_password1">Password:</label>
-                    {{ form.password1 }}
-                </div>
-                <div class="form-group">
-                    <label for="id_password2">Confirm Password:</label>
-                    {{ form.password2 }}
-                </div>
-
-                <!-- Other form fields -->
-                <div class="form-group">
-                    <label for="id_weight">Weight:</label>
-                    {{ form.weight }}
-                </div>
-                <div class="form-group">
-                    <label for="id_height">Height:</label>
-                    {{ form.height }}
-                </div>
-                <div class="form-group">
-                    <label for="id_birth_date">Birth Date:</label>
-                    {{ form.birth_date }}
-                </div>
-                <div class="form-group">
-                    <label for="id_activity_level">Activity Level:</label>
-                    {{ form.activity_level }}
-                </div>
-                <div class="form-group">
-                    <label for="id_sex_at_birth">Sex at Birth:</label>
-                    {{ form.sex_at_birth }}
-                </div>
-                <div class="form-group">
-                    <label for="id_goal_weight">Goal Weight:</label>
-                    {{ form.goal_weight }}
-                </div>
-                <div class="form-group">
-                    <label for="id_goal_activity_level">Goal Activity Level:</label>
-                    {{ form.goal_activity_level }}
-                </div>
-                <div class="form-group">
-                    <label for="id_workout_intensity">Workout Intensity:</label>
-                    {{ form.workout_intensity }}
-                </div>
-
-                <!-- Submit button -->
-                <button type="submit" class="btn btn-primary">Register</button>
-            </form>
-            <p class="mt-3">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+            </div>
         </div>
     </div>
 </div>

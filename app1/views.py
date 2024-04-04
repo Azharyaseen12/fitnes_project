@@ -1,6 +1,7 @@
 import random
 import os
 import csv
+from django.http import HttpRequest
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login
@@ -9,6 +10,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm,WeightEntryForm,AddFoodForm
 from .models import CustomUser, Exercise, Workout,Recipe,CalorieRequirement,DietPlan,WeightEntry
 import datetime
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 from collections import defaultdict
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -42,7 +45,7 @@ def user_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('generate_user_workout')
+                return redirect('view_workout')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -58,6 +61,7 @@ def generate_user_workout(request):
     user = request.user
     activity_level = user.activity_level
     goal_activity_level = user.goal_activity_level
+    
     workout_plan = generate_workout_plan(activity_level, goal_activity_level)
     store_workout_plan(user, workout_plan)
     return redirect('view_workout')
@@ -65,7 +69,6 @@ def generate_user_workout(request):
 
 def generate_workout_plan(activity_level, goal_activity_level):
     workout_plan = []
-
     for week_number in range(1, 5):
         if week_number < 3:
             num_days = get_num_days(activity_level)
@@ -268,10 +271,20 @@ def add_weight(request):
             return redirect('weight_tracker')
     else:
         form = WeightEntryForm()
-    return render(request, 'add_weight.html', {'form': form})
+    return render(request, 'weight_tracker.html', {'form': form})
 
 @login_required(login_url='login')
 def weight_tracker(request):
+    if request.method == 'POST':
+        form = WeightEntryForm(request.POST)
+        if form.is_valid():
+            weight_entry = form.save(commit=False)
+            weight_entry.user = request.user 
+            weight_entry.save()
+            return redirect('weight_tracker')
+    else:
+        form = WeightEntryForm()
+
     weight_entries = WeightEntry.objects.filter(user=request.user).order_by('date')
     dates = [entry.date for entry in weight_entries]
     weights = [entry.weight for entry in weight_entries]
@@ -293,7 +306,7 @@ def weight_tracker(request):
     graph = graph.decode('utf-8')
     buffer.close()
 
-    return render(request, 'weight_tracker.html', {'graph': graph})
+    return render(request, 'weight_tracker.html', {'graph': graph,'form': form})
 
 # def get_weight_data(user):
 #     weight_entries = WeightEntry.objects.filter(user=user).order_by('date')
@@ -302,38 +315,38 @@ def weight_tracker(request):
 #     return dates, weights
 
 
-
-@login_required(login_url='login')
 def calculate_daily_calorie_goal(sex, age, activity_level):
     try:
-        calorie_requirement = CalorieRequirement.objects.filter(
+        calorie_requirement = CalorieRequirement.objects.get(
             age_low__lte=age,
             age_high__gte=age
-        ).first()
-
+        )
+        
         if sex == 'male':
-            if activity_level == 'low':
+            # print(calorie_requirement.male_low_activity)
+            if activity_level == 'light':                
                 return calorie_requirement.male_low_activity
             elif activity_level == 'moderate':
+                
                 return calorie_requirement.male_moderate_activity
             elif activity_level == 'high':
+                
                 return calorie_requirement.male_high_activity
         elif sex == 'female':
-            if activity_level == 'low':
+            if activity_level == 'light':
                 return calorie_requirement.female_low_activity
             elif activity_level == 'moderate':
                 return calorie_requirement.female_moderate_activity
             elif activity_level == 'high':
                 return calorie_requirement.female_high_activity
-    except CalorieRequirement.DoesNotExist:
+    except ObjectDoesNotExist:
         return None
 
 def calculate_age(birth_date):
-    today = date.today()
+    today = timezone.now().date()
     age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
     return age
 
-@login_required(login_url='login')
 def generate_diet_plan(request):
     # Assuming you have access to the user's sex, age, and activity level
     user = request.user
@@ -377,7 +390,7 @@ def add_food_to_diet_plan(request):
                 recipe = Recipe.objects.get(pk=recipe_id)
                 diet_plan, _ = DietPlan.objects.get_or_create(user=request.user)
                 diet_plan.recipes.add(recipe)
-                return HttpResponse('success_page')  # Redirect to success page or any other page
+                return redirect('generate_diet_plan')  # Redirect to success page or any other page
         except Recipe.DoesNotExist:
                 # Handle case where recipe with given ID does not exist
                 return render(request, 'error.html', {'message': 'Recipe not found'})
@@ -390,7 +403,7 @@ def remove_food(request,id):
         recipe = Recipe.objects.filter(pk=id).first()
         diet_plan, _ = DietPlan.objects.get_or_create(user=request.user)
         diet_plan.recipes.remove(recipe)
-        return HttpResponse('recipe deleted')
+        return redirect('generate_diet_plan')
 
 @login_required(login_url='login')
 def logout_view(request):
