@@ -89,9 +89,9 @@ def generate_workout_plan(activity_level, goal_activity_level):
 
 
 def get_num_days(activity_level):
-    if activity_level == 'sedentary':
-        return 1
-    elif activity_level == 'light':
+    # if activity_level == 'sedentary':
+    #     return 0
+    if activity_level == 'light':
         return 1
     elif activity_level == 'moderate':
         return 2
@@ -108,6 +108,8 @@ def get_exercises_per_day(activity_level):
         return 4
     elif activity_level == 'intense':
         return 8
+    elif activity_level == 'top_athlete':
+        return 8
 
 
 def select_random_exercise(activity_level):
@@ -116,6 +118,8 @@ def select_random_exercise(activity_level):
     elif activity_level == 'moderate':
         exercises = Exercise.objects.filter(intermediate=True)
     elif activity_level == 'intense':
+        exercises = Exercise.objects.filter(intermediate=True) | Exercise.objects.filter(advanced=True)
+    elif activity_level == 'top_athlete':
         exercises = Exercise.objects.filter(intermediate=True) | Exercise.objects.filter(advanced=True)
 
     return random.choice(exercises).name
@@ -326,18 +330,20 @@ def calculate_daily_calorie_goal(sex, age, activity_level):
             # print(calorie_requirement.male_low_activity)
             if activity_level == 'light':                
                 return calorie_requirement.male_low_activity
-            elif activity_level == 'moderate':
-                
+            elif activity_level == 'moderate':                
                 return calorie_requirement.male_moderate_activity
-            elif activity_level == 'high':
-                
+            elif activity_level == 'intense':
+                return calorie_requirement.male_high_activity
+            elif activity_level == 'top_athlete':
                 return calorie_requirement.male_high_activity
         elif sex == 'female':
             if activity_level == 'light':
                 return calorie_requirement.female_low_activity
             elif activity_level == 'moderate':
                 return calorie_requirement.female_moderate_activity
-            elif activity_level == 'high':
+            elif activity_level == 'intense':
+                return calorie_requirement.female_high_activity
+            elif activity_level == 'top_athlete':
                 return calorie_requirement.female_high_activity
     except ObjectDoesNotExist:
         return None
@@ -354,7 +360,10 @@ def generate_diet_plan(request):
     sex = user.sex_at_birth
     age = calculate_age(user.birth_date)
     activity_level = user.activity_level
-
+    # print(activity_level,age,sex)
+    if age < 5:
+        age = 5
+    
     daily_calorie_goal = calculate_daily_calorie_goal(sex, age, activity_level)
     daily_calorie_range = daily_calorie_goal  
 

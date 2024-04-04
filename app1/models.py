@@ -8,7 +8,7 @@ class CustomUser(AbstractUser):
     height = models.FloatField(default=0.0)
     birth_date = models.DateField(default=datetime.date.today)
     ACTIVITY_LEVEL_CHOICES = [
-        ('sedentary', 'Sedentary - No activity'),
+        # ('sedentary', 'Sedentary - No activity'),
         ('light', 'Light activity - Once a week'),
         ('moderate', 'Moderate activity - 2/3 times a week'),
         ('intense', 'Intense activity - 4/5 days a week'),

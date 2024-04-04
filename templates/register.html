@@ -5,10 +5,10 @@
 <div class="container my-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card border-light shadow-lg"> <!-- Added border-dark and shadow-lg classes -->
+            <div class="card border-light shadow-lg">
                 <div class="card-body">
                     <h2 class="card-title">User Registration</h2>
-                    <form method="post">
+                    <form method="post" id="registrationForm">
                         {% csrf_token %}
                         {% if form.errors %}
                             <div class="alert alert-danger" role="alert">
@@ -60,5 +60,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    // JavaScript to validate birth date
+    document.getElementById('registrationForm').addEventListener('submit', function(event) {
+        var birthDateInput = document.getElementById('id_birth_date');
+        var birthDate = new Date(birthDateInput.value);
+        var currentDate = new Date();
+        if (birthDate > currentDate) {
+            alert('Birth date cannot be in the future.');
+            event.preventDefault();
+        }
+    });
+</script>
 
 {% endblock content %}
